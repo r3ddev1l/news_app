@@ -14,16 +14,21 @@ class ArticleDetailPage extends StatelessWidget {
               children: [
                 Stack(
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(16)),
-                      height: MediaQuery.of(context).size.height * .4,
-                      width: double.infinity,
+                    Hero(
+                      tag: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(16)),
+                        height: MediaQuery.of(context).size.height * .4,
+                        width: double.infinity,
+                      ),
                     ),
                     IconButton(
                         icon: Icon(Icons.arrow_back_ios_outlined),
-                        onPressed: () {}),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        }),
                   ],
                 ),
                 SizedBox(

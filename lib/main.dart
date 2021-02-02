@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:news_app/pages/article_detail_page.dart';
-import 'package:news_app/pages/article_list_page.dart';
+import 'package:news_app/pages/routes.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(NewsApp());
 }
 
-class MyApp extends StatelessWidget {
+class NewsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -16,7 +15,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.red,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: ArticleDetailPage(),
+      routes: routes,
     );
   }
 }

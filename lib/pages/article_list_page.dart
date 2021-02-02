@@ -32,14 +32,19 @@ App''',
                       ),
                       elevation: 5,
                       child: ListTile(
-                        onTap: () {},
-                        leading: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(8),
+                        onTap: () {
+                          Navigator.pushNamed(context, "articleDetailPage");
+                        },
+                        leading: Hero(
+                          tag: index,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            height: 64,
+                            width: 64,
                           ),
-                          height: 64,
-                          width: 64,
                         ),
                         title: Wrap(
                           children: [

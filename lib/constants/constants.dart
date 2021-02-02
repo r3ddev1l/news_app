@@ -15,4 +15,7 @@ class TextStyles {
   );
   static const newsArticleDateSource =
       TextStyle(fontSize: 16, color: Colors.grey);
+
+  static const newsListPageHeaderStyle =
+      TextStyle(fontWeight: FontWeight.w700, fontSize: 64);
 }

@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:news_app/bloc/news_article_bloc.dart';
 import 'package:news_app/constants/constants.dart';
+import 'package:pagination_view/pagination_view.dart';
 
 class ArticleListPage extends StatefulWidget {
   @override
@@ -10,7 +12,13 @@ class ArticleListPage extends StatefulWidget {
 }
 
 class _ArticleListPageState extends State<ArticleListPage> {
+  int page;
+  PaginationViewType paginationViewType;
   NewsArticleBloc _newsArticleBloc;
+  ScrollController _scrollController = ScrollController();
+  List articleList = List();
+  GlobalKey<PaginationViewState> key;
+  int shownItem = 6;
 
   @override
   void initState() {
@@ -26,7 +34,7 @@ class _ArticleListPageState extends State<ArticleListPage> {
     );
   }
 
-//main body building method
+  //main body building method
   Widget bodyBuilder() {
     return SafeArea(
       child: SingleChildScrollView(
@@ -37,12 +45,13 @@ class _ArticleListPageState extends State<ArticleListPage> {
             children: [
               Text(
                 '''News
-App''',
+        App''',
                 style: TextStyles.newsListPageHeaderStyle,
               ),
               Container(
-                  height: MediaQuery.of(context).size.height *
-                      .8, //Takes up 80 % of the screen height
+                  height: 600,
+                  // MediaQuery.of(context).size.height *
+                  //     .8, //Takes up 80 % of the screen height
                   child: BlocBuilder<NewsArticleBloc, NewsArticleState>(
                     cubit: _newsArticleBloc,
                     builder: (context, state) {
@@ -58,9 +67,59 @@ App''',
                         );
                       } else if (state is NewsArticleLoadedState) {
                         print("NewsArticleLoadedState");
+
+                        //to display the initial List items
+                        if (articleList.length == 0) {
+                          for (var i = 0; i < shownItem; i++) {
+                            articleList
+                                .add(state.newsArticles.articles[i].source);
+                          }
+                        }
+
+                        //add additional list items when the user scrolls beyond the end of the screen
+                        _scrollController.addListener(
+                          () {
+                            if (_scrollController.position.pixels ==
+                                _scrollController.position.maxScrollExtent) {
+                              for (int i = shownItem; i < shownItem + 3; i++) {
+                                articleList.add(state.newsArticles.articles[i]);
+                              }
+
+                              shownItem = shownItem + 3;
+                              if (shownItem > articleList.length) {
+                                shownItem = articleList.length - 1;
+                              }
+                              setState(
+                                () {
+                                  if (shownItem == articleList.length) {
+                                    Scaffold.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text("Loaded"),
+                                        duration: Duration(seconds: 1),
+                                      ),
+                                    );
+                                  }
+                                },
+                              );
+                            }
+                          },
+                        );
                         return ListView.builder(
-                            itemCount: state.newsArticles.articles.length,
+                            controller: _scrollController,
+                            itemCount: shownItem,
                             itemBuilder: (context, index) {
+                              // if (shownItem == 19) {
+                              //   setState(
+                              //     () {
+                              //       Scaffold.of(context).showSnackBar(
+                              //         SnackBar(
+                              //           content: Text("End of the List"),
+                              //           duration: Duration(seconds: 1),
+                              //         ),
+                              //       );
+                              //     },
+                              //   );
+                              // }
                               return newsCardBuilder(
                                   index: index, state: state);
                             });
@@ -80,55 +139,58 @@ App''',
     );
   }
 
-//news article card building method
+  //news article card building method
   Widget newsCardBuilder({int index, var state}) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 8.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      elevation: 5,
-      child: ListTile(
-        onTap: () {
-          Navigator.pushNamed(
-            context,
-            "articleDetailPage",
-            arguments: NewsDetailPageArguments(
-                index: index,
-                imageURL: state.newsArticles.articles[index].urlToImage,
-                title: state.newsArticles.articles[index].title,
-                description: state.newsArticles.articles[index].description,
-                source: state.newsArticles.articles[index].source.name,
-                date: dateFormatter(
-                    date: state.newsArticles.articles[index].publishedAt)),
-          );
-        },
-        leading: Hero(
-          tag: index,
-          child: Container(
-            child: FadeInImage.assetNetwork(
-                fit: BoxFit.fitWidth,
-                placeholder: "assets/images/NewsImagePlaceHolder.png",
-                image: state.newsArticles.articles[index].urlToImage),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
+    return Padding(
+      padding: const EdgeInsets.all(2.0),
+      child: Card(
+        margin: EdgeInsets.symmetric(vertical: 8.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        elevation: 5,
+        child: ListTile(
+          onTap: () {
+            Navigator.pushNamed(
+              context,
+              "articleDetailPage",
+              arguments: NewsDetailPageArguments(
+                  index: index,
+                  imageURL: state.newsArticles.articles[index].urlToImage,
+                  title: state.newsArticles.articles[index].title,
+                  description: state.newsArticles.articles[index].description,
+                  source: state.newsArticles.articles[index].source.name,
+                  date: dateFormatter(
+                      date: state.newsArticles.articles[index].publishedAt)),
+            );
+          },
+          leading: Hero(
+            tag: index,
+            child: Container(
+              child: FadeInImage.assetNetwork(
+                  fit: BoxFit.fitWidth,
+                  placeholder: "assets/images/NewsImagePlaceHolder.png",
+                  image: state.newsArticles.articles[index].urlToImage),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              height: 64,
+              width: 64,
             ),
-            height: 64,
-            width: 64,
           ),
-        ),
-        title: Wrap(
-          children: [
-            Text(state.newsArticles.articles[index].title),
-          ],
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(state.newsArticles.articles[index].source.name),
-            Text(dateFormatter(
-                date: state.newsArticles.articles[index].publishedAt))
-          ],
+          title: Wrap(
+            children: [
+              Text(state.newsArticles.articles[index].title),
+            ],
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(state.newsArticles.articles[index].source.name),
+              Text(dateFormatter(
+                  date: state.newsArticles.articles[index].publishedAt))
+            ],
+          ),
         ),
       ),
     );
